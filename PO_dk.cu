@@ -166,7 +166,7 @@ void fillA(arma::Mat<double> &A,int N,boost::mt19937 &rng,int caso,double prob_0
 			{
 				if(gen()>=prob_0)
 				{
-					fprintf(w, "%f  ",100.0);
+					fprintf(w, "%f  ",500.0);
 				}
 				else
 				{
