@@ -120,7 +120,7 @@ int main()
     	if(W==1)
     	{
     		fprintf(gplotpipe, "Z(x,y)=%lf*0.5*(",A_med_squared);
-    		fprintf(gplotpipe, "(x-%lf)*(0.99*y-1)*%lf*0.99/((0.99*y-1)*(0.99*y-1)+x*x)+0.99*(y-%lf)*(%lf*(0.99*y-1)+x)/((0.99*y-1)*(0.99*y-1)+x*x)",gamma_med,K_med,K_med,gamma_med);
+    		fprintf(gplotpipe, "(x-%lf)*(0.99*y-1)*%lf*0.99/((0.99*y-1)*(0.99*y-1)+x*x)-0.99*(y-%lf)*(%lf*(0.99*y-1)+x)/((0.99*y-1)*(0.99*y-1)+x*x)",gamma_med,K_med,K_med,gamma_med);
     		fprintf(gplotpipe, ")\n");
     	}
     	if(W==2)
@@ -132,6 +132,6 @@ int main()
     }
 
     fprintf(gplotpipe, "set pm3d\n");
-    fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] Z(x,y)\n",gammarangemin,gammarangemax,Krangemin,Krangemax);
+    fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] Z(x,y), 'TempProm.txt' u 1:2:%d\n",gammarangemin,gammarangemax,Krangemin,Krangemax,W+3);
 	return 0;
 }
