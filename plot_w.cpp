@@ -172,7 +172,7 @@ int main()
             fprintf(gplotpipe, "Z3(x,y)=%lf*0.5*(",A_med_squared);
             fprintf(gplotpipe, "-x*%lf/y+x*(x-%lf)*(x+%lf)*(%lf/y)/((0.998*y-1)*(0.998*y-1)+x*x)-(y/%lf-1)*(y/%lf-1)*(1+%lf*%lf)*x*%lf/(y*((0.998*y-1)*(0.998*y-1)+x*x))-2*x*(1-%lf/y)*(x*%lf-0.998*y+1)/((0.998*y-1)*(0.998*y-1)+x*x)",K_med,gamma_med,gamma_med,K_med,K_med,K_med,gamma_med,gamma_med,K_med,K_med,gamma_med);
             fprintf(gplotpipe, ")\n");
-            fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] (Z1(x,y)+Z2(x,y)+Z3(x,y))*%lf, 'TempProm.txt' u 1:2:($3+$4+$5)\n",gammarangemin,gammarangemax,Krangemin,cte,Krangemax);
+            fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] (Z1(x,y)+Z2(x,y)+Z3(x,y))*%lf, 'TempProm.txt' u 1:2:($3+$4+$5)\n",gammarangemin,gammarangemax,Krangemin,Krangemax,cte);
     }
     if(test!=1)
     {
