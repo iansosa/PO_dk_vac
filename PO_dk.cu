@@ -248,7 +248,7 @@ void fillG(std::vector<double> &G,int N,boost::mt19937 &rng,int caso)
 
 void fillI(std::vector<double> &I,int N,boost::mt19937 &rng,int caso)
 {
-    boost::normal_distribution<> unif(1.0, 0.3 );//la distribucion de probabilidad uniforme entre cero y 2pi
+    boost::normal_distribution<> unif(1.0, 0.1 );//la distribucion de probabilidad uniforme entre cero y 2pi
     boost::variate_generator< boost::mt19937&, boost::normal_distribution<> > gen( rng , unif );//gen es una funcion que toma el engine y la distribucion y devuelve el numero random
 
     if (caso==0)
