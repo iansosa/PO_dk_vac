@@ -50,7 +50,10 @@ int main()
 
     int regime;
     printf("Regime: [1a(0), 1b(1), 2(2)]: ");
-    std::cin >>regime; 
+    std::cin >>regime;
+    double F; 
+    double K_1; 
+    double gamma_1; 
     if(regime==0)
     {
     	printf("1a\n");
@@ -83,6 +86,17 @@ int main()
         }
     }
 
+    if(regime==2)
+    {
+        printf("F: ");
+        std::cin >>F;
+        printf("K_1: ");
+        std::cin >>K_1;
+        printf("gamma_1: ");
+        std::cin >>gamma_1;
+    }
+
+
     double gamma_med;
     printf("<gamma>: ");
     std::cin >>gamma_med; 
@@ -110,14 +124,28 @@ int main()
 
 
     double A_med_squared;
+    double w_prime;
+    double c;
+    double a1;
+
     int N;
+    printf("N: ");
+    std::cin >>N;
     if(regime==1)
     {
-    	printf("N: ");
-    	std::cin >>N;
-
     	A_med_squared=pow((double)K_med/(N),2)/(1.0+pow(gamma_med,2));
     	printf("A_med=%lf\n",sqrt(A_med_squared) );
+    } 
+    if(regime==2)
+    {
+        c=(K_med/500.0)*1.0/sqrt((K_med/500.0-1)^2+(gamma_med)^2);
+        printf("A_med/A_1=%lf\n",c);
+        a1=((1.0/F)^2)*((K_med*0.998-1-c*c*K_1*(1.0/K_med)*499*(K_med/500.0-1))^2+(gamma_1+gamma_med*499*K_1*(1.0/K_med)*c*c)^2);
+        printf("A_1=%lf\n",a1 );
+        printf("A_med=%lf\n",a1*c );
+        w_prime=0.5*a1*a1*((gamma_1+499*K_1*(1.0/K_med)*c*c*gamma_med)/(gamma_1+499*K_1*(1.0/K_med)*gamma_med));
+        printf("W'=%lf\n",w_prime );
+        A_med_squared=a1*a1*c*c;
     } 
 
 	FILE *gplotpipe = popen( "gnuplot -persist", "w" );
@@ -125,7 +153,7 @@ int main()
     {
     	if(W==0)
     	{
-    		fprintf(gplotpipe, "Z(x,y)=-%lf\n",gamma_med);
+    		fprintf(gplotpipe, "Z(x,y)=%lf\n",gamma_med);
     	}
     	if(W==1)
     	{
@@ -157,13 +185,35 @@ int main()
     		fprintf(gplotpipe, ")\n");
     	}
     }
+    if(regime==2)
+    {
+        if(W==1)
+        {
+            fprintf(gplotpipe, "Z(x,y)=%lf*0.5*%lf*0.998*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(",A_med_squared,K_med);
+            fprintf(gplotpipe, "-(x-%lf)*(0.998*y-1)+(y/%lf-1)*(x+0.998*y*%lf-%lf)",gamma_med,K_med,gamma_med,gamma_med);
+            fprintf(gplotpipe, ")-%lf*%lf*%lf*%lf*(1.0/y)*(y/%lf-1-x/%lf+1)\n",w_prime,w_prime,gamma_med,K_med,K_med,gamma_med);
+        }
+        if(W==0)
+        {
+            fprintf(gplotpipe, "Z(x,y)=%lf*0.5*(",A_med_squared);
+            fprintf(gplotpipe, "%lf+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*x-(x-%lf)*(0.998*y-1)+x*%lf*%lf*(y/%lf-x/%lf))",gamma_med,K_med,gamma_med,gamma_med,gamma_med);
+            fprintf(gplotpipe, ")+%lf*%lf*%lf*(x+%lf*(y/%lf-x/%lf))/y\n",K_med,w_prime,w_prime,gamma_med);
+        }
+        if(W==2)
+        {
+            fprintf(gplotpipe, "Z(x,y)=-%lf*0.5*x*%lf*(1/y)*(",A_med_squared,K_med);
+            fprintf(gplotpipe, "1+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*(y/%lf-1)+(%lf*(y/%lf-x/%lf))*(%lf*(y/%lf-x/%lf)))+2*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(x*%lf*(y/%lf-x/%lf)-(y/%lf-1)*(%lf*0.998-1))",K_med,K_med,gamma_med,K_med,gamma_med,gamma_med,K_med,gamma_med,gamma_med,K_med);
+            fprintf(gplotpipe, ")-x*%lf*(1/y)*%lf*%lf\n",K_med,w_prime,w_prime);
+        }
+    }
 
     fprintf(gplotpipe, "set pm3d\n");
     fprintf(gplotpipe, "set samples 200,200\n");
     fprintf(gplotpipe, "set isosamples 30,30\n");
     if(test ==1)
     {
-
+        if(regime==1)
+        {
             fprintf(gplotpipe, "Z1(x,y)=%lf*0.5*(",A_med_squared);
             fprintf(gplotpipe, "%lf-(x-%lf)*(x*%lf+0.998*y-1)/((0.998*y-1)*(0.998*y-1)+x*x)+(y/%lf-1)*x*(1+%lf*%lf)/((0.998*y-1)*(0.998*y-1)+x*x))\n",gamma_med,gamma_med,gamma_med,K_med,gamma_med,gamma_med);
             fprintf(gplotpipe, "Z2(x,y)=%lf*0.5*(",A_med_squared);
@@ -173,6 +223,19 @@ int main()
             fprintf(gplotpipe, "-x*%lf/y+x*(x-%lf)*(x+%lf)*(%lf/y)/((0.998*y-1)*(0.998*y-1)+x*x)-(y/%lf-1)*(y/%lf-1)*(1+%lf*%lf)*x*%lf/(y*((0.998*y-1)*(0.998*y-1)+x*x))-2*x*(1-%lf/y)*(x*%lf-0.998*y+1)/((0.998*y-1)*(0.998*y-1)+x*x)",K_med,gamma_med,gamma_med,K_med,K_med,K_med,gamma_med,gamma_med,K_med,K_med,gamma_med);
             fprintf(gplotpipe, ")\n");
             fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] (Z1(x,y)+Z2(x,y)+Z3(x,y))*%lf, 'TempProm.txt' u 1:2:($3+$4+$5)\n",gammarangemin,gammarangemax,Krangemin,Krangemax,cte);
+        }
+        if(regime==2)
+        {
+            fprintf(gplotpipe, "Z1(x,y)=%lf*0.5*%lf*0.998*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(",A_med_squared,K_med);
+            fprintf(gplotpipe, "-(x-%lf)*(0.998*y-1)+(y/%lf-1)*(x+0.998*y*%lf-%lf)",gamma_med,K_med,gamma_med,gamma_med);
+            fprintf(gplotpipe, ")-%lf*%lf*%lf*%lf*(1.0/y)*(y/%lf-1-x/%lf+1)\n",w_prime,w_prime,gamma_med,K_med,K_med,gamma_med);
+            fprintf(gplotpipe, "Z2(x,y)=%lf*0.5*(",A_med_squared);
+            fprintf(gplotpipe, "%lf+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*x-(x-%lf)*(0.998*y-1)+x*%lf*%lf*(y/%lf-x/%lf))",gamma_med,K_med,gamma_med,gamma_med,gamma_med);
+            fprintf(gplotpipe, ")+%lf*%lf*%lf*(x+%lf*(y/%lf-x/%lf))/y\n",K_med,w_prime,w_prime,gamma_med);
+            fprintf(gplotpipe, "Z3(x,y)=-%lf*0.5*x*%lf*(1/y)*(",A_med_squared,K_med);
+            fprintf(gplotpipe, "1+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*(y/%lf-1)+(%lf*(y/%lf-x/%lf))*(%lf*(y/%lf-x/%lf)))+2*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(x*%lf*(y/%lf-x/%lf)-(y/%lf-1)*(%lf*0.998-1))",K_med,K_med,gamma_med,K_med,gamma_med,gamma_med,K_med,gamma_med,gamma_med,K_med);
+            fprintf(gplotpipe, ")-x*%lf*(1/y)*%lf*%lf\n",K_med,w_prime,w_prime);
+        }
     }
     if(test!=1)
     {
