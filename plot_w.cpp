@@ -16,11 +16,11 @@ double truegammamed(int N)
 {
     double aux1,aux2,aux3,aux4,aux5;
     double gamma_med=0;
-    FILE *r= fopen("TempProm.txt", "r");
+    FILE *r= fopen("W.txt", "r");
     for (int i = 0; i < N-1; ++i)
     {
         fscanf(r, "%lf   %lf   %lf   %lf   %lf", &aux1,&aux2,&aux3,&aux4,&aux5);
-        gamma_med=gamma_med+aux1;
+        gamma_med=gamma_med+aux2;
     }
     fclose(r);
     return(gamma_med/N);
@@ -30,11 +30,11 @@ double trueKmed(int N)
 {
     double aux1,aux2,aux3,aux4,aux5;
     double gamma_med=0;
-    FILE *r= fopen("TempProm.txt", "r");
+    FILE *r= fopen("W.txt", "r");
     for (int i = 0; i < N-1; ++i)
     {
         fscanf(r, "%lf   %lf   %lf   %lf   %lf", &aux1,&aux2,&aux3,&aux4,&aux5);
-        gamma_med=gamma_med+aux2;
+        gamma_med=gamma_med+aux1;
     }
     fclose(r);
     return(gamma_med/N);
@@ -124,6 +124,7 @@ int main()
 
 
     double A_med_squared;
+    double A_med;
     double w_prime;
     double c;
     double a1;
@@ -143,10 +144,10 @@ int main()
         a1=(pow(1.0/F,2))*(pow(K_med*0.998-1-c*c*K_1*(1.0/K_med)*499*(K_med/500.0-1),2)+pow(gamma_1+gamma_med*499*K_1*(1.0/K_med)*c*c,2));
         a1=sqrt(1.0/a1);
         printf("A_1=%lf\n",a1 );
-        printf("A_med=%lf\n",a1*c );
+        A_med=a1*c;
+        printf("A_med=%lf\n",A_med);
         w_prime=0.5*a1*a1*((gamma_1+499*K_1*(1.0/K_med)*c*c*gamma_med)/(gamma_1+499*K_1*(1.0/K_med)*gamma_med));
         printf("W'=%lf\n",w_prime );
-        A_med_squared=a1*a1*c*c;
     } 
 
 	FILE *gplotpipe = popen( "gnuplot -persist", "w" );
@@ -190,25 +191,26 @@ int main()
     {
         if(W==1)
         {
-            fprintf(gplotpipe, "Z(x,y)=%lf*0.5*%lf*0.998*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(",A_med_squared,K_med);
-            fprintf(gplotpipe, "-(x-%lf)*(0.998*y-1)+(y/%lf-1)*(x+0.998*y*%lf-%lf)",gamma_med,K_med,gamma_med,gamma_med);
-            fprintf(gplotpipe, ")-%lf*%lf*%lf*%lf*(1.0/y)*(y/%lf-1-x/%lf+1)\n",w_prime,w_prime,gamma_med,K_med,K_med,gamma_med);
+            fprintf(gplotpipe, "Z(x,y)=%.15lf*0.5*%lf*0.998*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(",A_med*A_med,K_med);
+            fprintf(gplotpipe, "(x-%lf)*(0.998*y-1)-(y/%lf-1)*(x+0.998*y*%lf-%lf)",gamma_med,K_med,gamma_med,gamma_med);
+            fprintf(gplotpipe, ")-%.15lf*%.15lf*%lf*%lf*(1.0/y)*(y/%lf-1-x/%lf+1)\n",w_prime,w_prime,gamma_med,K_med,K_med,gamma_med);
         }
         if(W==0)
         {
-            fprintf(gplotpipe, "Z(x,y)=%lf*0.5*(",A_med_squared);
-            fprintf(gplotpipe, "%lf+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*x-(x-%lf)*(0.998*y-1)+x*%lf*%lf*(y/%lf-x/%lf))",gamma_med,K_med,gamma_med,gamma_med,gamma_med,K_med,gamma_med);
-            fprintf(gplotpipe, ")+%lf*%lf*%lf*(x+%lf*(y/%lf-x/%lf))/y\n",K_med,w_prime,w_prime,gamma_med,K_med,gamma_med);
+            fprintf(gplotpipe, "Z(x,y)=%.15lf*0.5*(",A_med*A_med);
+            fprintf(gplotpipe, "%.15lf+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*x-(x-%lf)*(0.998*y-1)+x*%lf*%lf*(y/%lf-x/%lf))",gamma_med,K_med,gamma_med,gamma_med,gamma_med,K_med,gamma_med);
+            fprintf(gplotpipe, ")+%lf*%.15lf*%.15lf*(x+%lf*(y/%lf-x/%lf))/y\n",K_med,w_prime,w_prime,gamma_med,K_med,gamma_med);
         }
         if(W==2)
         {
-            fprintf(gplotpipe, "Z(x,y)=-%lf*0.5*x*%lf*(1/y)*(",A_med_squared,K_med);
+            fprintf(gplotpipe, "Z(x,y)=-%.15lf*0.5*x*%lf*(1/y)*(",A_med*A_med,K_med);
             fprintf(gplotpipe, "1+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*(y/%lf-1)+(%lf*(y/%lf-x/%lf))*(%lf*(y/%lf-x/%lf)))+2*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(x*%lf*(y/%lf-x/%lf)-(y/%lf-1)*(%lf*0.998-1))",K_med,K_med,gamma_med,K_med,gamma_med,gamma_med,K_med,gamma_med,gamma_med,K_med,gamma_med,K_med,K_med);
-            fprintf(gplotpipe, ")-x*%lf*(1/y)*%lf*%lf\n",K_med,w_prime,w_prime);
+            fprintf(gplotpipe, ")-x*%lf*(1/y)*%.15lf*%.15lf\n",K_med,w_prime,w_prime);
         }
     }
 
-    fprintf(gplotpipe, "set pm3d\n");
+    //fprintf(gplotpipe, "set pm3d\n");
+    fprintf(gplotpipe, "set surface\n");
     fprintf(gplotpipe, "set samples 200,200\n");
     fprintf(gplotpipe, "set isosamples 30,30\n");
     if(test ==1)
@@ -223,24 +225,25 @@ int main()
             fprintf(gplotpipe, "Z3(x,y)=%lf*0.5*(",A_med_squared);
             fprintf(gplotpipe, "-x*%lf/y+x*(x-%lf)*(x+%lf)*(%lf/y)/((0.998*y-1)*(0.998*y-1)+x*x)-(y/%lf-1)*(y/%lf-1)*(1+%lf*%lf)*x*%lf/(y*((0.998*y-1)*(0.998*y-1)+x*x))-2*x*(1-%lf/y)*(x*%lf-0.998*y+1)/((0.998*y-1)*(0.998*y-1)+x*x)",K_med,gamma_med,gamma_med,K_med,K_med,K_med,gamma_med,gamma_med,K_med,K_med,gamma_med);
             fprintf(gplotpipe, ")\n");
-            fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] (Z1(x,y)+Z2(x,y)+Z3(x,y))*%lf, 'TempProm.txt' u 1:2:($3+$4+$5)\n",gammarangemin,gammarangemax,Krangemin,Krangemax,cte);
+            fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] (Z1(x,y)+Z2(x,y)+Z3(x,y))*%lf, 'W.txt' u 1:2:($3+$4+$5)\n",gammarangemin,gammarangemax,Krangemin,Krangemax,cte);
         }
         if(regime==2)
         {
-            fprintf(gplotpipe, "Z1(x,y)=%lf*0.5*%lf*0.998*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(",A_med_squared,K_med);
-            fprintf(gplotpipe, "-(x-%lf)*(0.998*y-1)+(y/%lf-1)*(x+0.998*y*%lf-%lf)",gamma_med,K_med,gamma_med,gamma_med);
-            fprintf(gplotpipe, ")-%lf*%lf*%lf*%lf*(1.0/y)*(y/%lf-1-x/%lf+1)\n",w_prime,w_prime,gamma_med,K_med,K_med,gamma_med);
-            fprintf(gplotpipe, "Z2(x,y)=%lf*0.5*(",A_med_squared);
-            fprintf(gplotpipe, "%lf+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*x-(x-%lf)*(0.998*y-1)+x*%lf*%lf*(y/%lf-x/%lf))",gamma_med,K_med,gamma_med,gamma_med,gamma_med,K_med,gamma_med);
-            fprintf(gplotpipe, ")+%lf*%lf*%lf*(x+%lf*(y/%lf-x/%lf))/y\n",K_med,w_prime,w_prime,gamma_med,K_med,gamma_med);
-            fprintf(gplotpipe, "Z3(x,y)=-%lf*0.5*x*%lf*(1/y)*(",A_med_squared,K_med);
+            fprintf(gplotpipe, "Z1(x,y)=%.15lf*0.5*%lf*0.998*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(",A_med*A_med,K_med);
+            fprintf(gplotpipe, "(x-%lf)*(0.998*y-1)-(y/%lf-1)*(x+0.998*y*%lf-%lf)",gamma_med,K_med,gamma_med,gamma_med);
+            fprintf(gplotpipe, ")-%.15lf*%.15lf*%lf*%lf*(1.0/y)*(y/%lf-1-x/%lf+1)\n",w_prime,w_prime,gamma_med,K_med,K_med,gamma_med);
+            fprintf(gplotpipe, "Z2(x,y)=%.15lf*0.5*(",A_med*A_med);
+            fprintf(gplotpipe, "%.15lf+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*x-(x-%lf)*(0.998*y-1)+x*%lf*%lf*(y/%lf-x/%lf))",gamma_med,K_med,gamma_med,gamma_med,gamma_med,K_med,gamma_med);
+            fprintf(gplotpipe, ")+%lf*%.15lf*%.15lf*(x+%lf*(y/%lf-x/%lf))/y\n",K_med,w_prime,w_prime,gamma_med,K_med,gamma_med);
+            fprintf(gplotpipe, "Z3(x,y)=-%.15lf*0.5*x*%lf*(1/y)*(",A_med*A_med,K_med);
             fprintf(gplotpipe, "1+(1/((0.998*y-1)*(0.998*y-1)+x*x))*((y/%lf-1)*(y/%lf-1)+(%lf*(y/%lf-x/%lf))*(%lf*(y/%lf-x/%lf)))+2*(1/((0.998*y-1)*(0.998*y-1)+x*x))*(x*%lf*(y/%lf-x/%lf)-(y/%lf-1)*(%lf*0.998-1))",K_med,K_med,gamma_med,K_med,gamma_med,gamma_med,K_med,gamma_med,gamma_med,K_med,gamma_med,K_med,K_med);
-            fprintf(gplotpipe, ")-x*%lf*(1/y)*%lf*%lf\n",K_med,w_prime,w_prime);
+            fprintf(gplotpipe, ")-x*%lf*(1/y)*%.15lf*%.15lf\n",K_med,w_prime,w_prime);
+            fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] (Z1(x,y)+Z2(x,y)+Z3(x,y))*%lf, 'W.txt' u 1:2:($3+$4+$5)\n",gammarangemin,gammarangemax,Krangemin,Krangemax,cte);
         }
     }
     if(test!=1)
     {
-        fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] Z(x,y)*%lf, 'TempProm.txt' u 1:2:%d\n",gammarangemin,gammarangemax,Krangemin,Krangemax,cte,W+3);
+        fprintf(gplotpipe, "splot [%lf:%lf] [%lf:%lf] Z(x,y)*%lf w l palette, 'W.txt' u 2:1:%d w p palette pt 7 ps 1\n",gammarangemin,gammarangemax,Krangemin,Krangemax,cte,W+3);
     }
     printf("<g>=%lf   <K>=%lf\n",truegammamed(N),trueKmed(N));
 
