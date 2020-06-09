@@ -261,7 +261,7 @@ void fillA(state_type &d_A,int N,boost::mt19937 &rng,int load,value_type &snippe
         {
             for (int j = 0; j < N; ++j)
             {
-                h_A[i+N*j]=1.0;
+                h_A[i+N*j]=20.0;
             }
         }
         FILE *w= fopen("Ai.txt", "w");
@@ -506,11 +506,11 @@ void calcproperties(int N,int steps_estim,state_type &A,state_type &x,thrust::ho
     thrust::fill(d_J_0.begin(), d_J_0.end(), 0);
 
 
-    for (int i = T_properties; i < steps_estim; ++i)
+    for (int i = steps_estim-T_properties; i < steps_estim; ++i)
     {
-        if(((int)(100.0*(i-T_properties)/(steps_estim-T_properties)))%10==0)
+        if(((int)(100.0*(i-(steps_estim-T_properties))/(T_properties)))%10==0)
         {
-            printf("calculating properties: %d \n", (int)(100.0*(i-T_properties)/(steps_estim-T_properties)));
+            printf("calculating properties: %d \n", (int)(100.0*(i-(steps_estim-T_properties))/(T_properties)));
         }
         d_J_aux=mean_force_calculator::get_energy_transfer(x,A,N,i);
         thrust::transform(d_J_omega.begin(),d_J_omega.end(),d_J_aux.begin(),d_J_omega.begin(),_1+_2);
@@ -519,11 +519,11 @@ void calcproperties(int N,int steps_estim,state_type &A,state_type &x,thrust::ho
         thrust::transform(thrust::counting_iterator<int>(0),thrust::counting_iterator<int>(N),d_J_aux.begin(),returnJ0(thrust::raw_pointer_cast(A.data()),thrust::raw_pointer_cast(x.data()),N,i));
         thrust::transform(d_J_0.begin(),d_J_0.end(),d_J_aux.begin(),d_J_0.begin(),_1+_2);
     }
-    thrust::transform(d_J_gamma.begin(),d_J_gamma.end(),d_J_gamma.begin(),-_1/(steps_estim-T_properties));
+    thrust::transform(d_J_gamma.begin(),d_J_gamma.end(),d_J_gamma.begin(),-_1/(T_properties));
     thrust::host_vector<value_type> h_J_gamma=d_J_gamma;
-    thrust::transform(d_J_omega.begin(),d_J_omega.end(),d_J_omega.begin(),_1/(steps_estim-T_properties));
+    thrust::transform(d_J_omega.begin(),d_J_omega.end(),d_J_omega.begin(),_1/(T_properties));
     thrust::host_vector<value_type> h_J_omega=d_J_omega;
-    thrust::transform(d_J_0.begin(),d_J_0.end(),d_J_0.begin(),_1/(steps_estim-T_properties));
+    thrust::transform(d_J_0.begin(),d_J_0.end(),d_J_0.begin(),_1/(T_properties));
     thrust::host_vector<value_type> h_J_0=d_J_0;
     printproperties(N,G,h_J_gamma,h_J_omega,h_J_0,I,snippet);
 }
@@ -596,8 +596,8 @@ int main()
     {
         printf("Error: T_properties/dt>steps_estim\n");
     }
-    state_type x_vec(2*N*steps_estim+1);
-    thrust::host_vector<value_type> x_vec_host(2*N*steps_estim+1);
+    state_type x_vec(2*N*(steps_estim+1));
+    thrust::host_vector<value_type> x_vec_host(2*N*(steps_estim+1));
     phase_oscillators sys(N,d_A,thrust::raw_pointer_cast(d_G.data()),thrust::raw_pointer_cast(d_I.data()),thrust::raw_pointer_cast(d_Fw.data()),thrust::raw_pointer_cast(d_F.data())/*,d_sum_placeholder*/);
     if(dt<Total_time-Saved_time)
     {
