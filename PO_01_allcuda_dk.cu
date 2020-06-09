@@ -261,7 +261,7 @@ void fillA(state_type &d_A,int N,boost::mt19937 &rng,int load,value_type &snippe
         {
             for (int j = 0; j < N; ++j)
             {
-                h_A[i+N*j]=500.0;
+                h_A[i+N*j]=1.0;
             }
         }
         FILE *w= fopen("Ai.txt", "w");
@@ -326,7 +326,7 @@ void fillG(state_type &d_G,int N,boost::mt19937 &rng,int load)
 
 void fillI(state_type &d_I,int N,boost::mt19937 &rng,int load)
 {
-    boost::normal_distribution<> unif(1, 0.1 );
+    boost::normal_distribution<> unif(1, 0.05 );
     boost::variate_generator< boost::mt19937&, boost::normal_distribution<> > gen( rng , unif );
 
     thrust::host_vector<value_type> h_I(N);
