@@ -207,7 +207,7 @@ struct push_back_state_and_time
     void operator()( const state_type &x , value_type t )
     {
         const value_type *input = thrust::raw_pointer_cast(x.data());
-        thrust::copy(x.data(),x.data()+2*m_N,m_states.data()+m_current_it*2*m_N);
+        thrust::copy(x.begin(),x.end(),m_states.begin()+m_current_it*2*m_N);
         m_times.push_back( t );
         m_current_it=m_current_it+1;
     }
