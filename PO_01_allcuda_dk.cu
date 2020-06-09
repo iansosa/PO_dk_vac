@@ -29,7 +29,7 @@ using namespace std;
 
 using namespace boost::numeric::odeint;
 using namespace thrust::placeholders;
-typedef float value_type;
+typedef double value_type;
 
 
 typedef thrust::device_vector< value_type > state_type;
@@ -489,7 +489,7 @@ void printproperties(int N,thrust::host_vector<value_type> &G,thrust::host_vecto
         {
             printf("calculating properties: %d \n", (int)(100.0*j/(N)));
         }
-        fprintf(f,"%.10lf   %.10lf   %.10lf   %.10lf   %.10lf \n",snippet/I[j],G[j]/I[j], h_J_0[j],h_J_gomega[j],G[j]*h_J_gamma[j]); 
+        fprintf(f,"%.15lf   %.15lf   %.15lf   %.15lf   %.15lf \n",snippet/I[j],G[j]/I[j], h_J_0[j],h_J_gomega[j],G[j]*h_J_gamma[j]); 
     }
 
     fclose(f);
